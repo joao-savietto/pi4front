@@ -1,15 +1,12 @@
+import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import { increment, decrement, incrementByAmount } from './store/counterSlice'
-import { ProtectedPage } from './pages/ProtectedPage'
 
 function App() {
-  const count = useSelector((state: any) => state.counter.value)
-  const dispatch = useDispatch<any>()
-
+  const [count, setCount] = useState(0)
+  
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
@@ -91,19 +88,19 @@ function App() {
                   
                   <div className="flex flex-col sm:flex-row justify-center gap-4">
                     <button 
-                      onClick={() => dispatch(increment())}
+                      onClick={() => setCount(count + 1)}
                       className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md transition duration-200"
                     >
                       Increment
                     </button>
                     <button 
-                      onClick={() => dispatch(decrement())}
+                      onClick={() => setCount(count - 1)}
                       className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-md transition duration-200"
                     >
                       Decrement
                     </button>
                     <button 
-                      onClick={() => dispatch(incrementByAmount(5))}
+                      onClick={() => setCount(count + 5)}
                       className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-md transition duration-200"
                     >
                       Add 5
@@ -116,9 +113,6 @@ function App() {
                 </div>
               </div>
             } />
-
-            {/* Protected Route */}
-            <Route path="/protected" element={<ProtectedPage />} />
           </Routes>
         </main>
       </div>
