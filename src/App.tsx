@@ -4,6 +4,7 @@ import './App.css'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { increment, decrement, incrementByAmount } from './store/counterSlice'
+import { ProtectedPage } from './pages/ProtectedPage'
 
 function App() {
   const count = useSelector((state: any) => state.counter.value)
@@ -115,6 +116,9 @@ function App() {
                 </div>
               </div>
             } />
+
+            {/* Protected Route */}
+            <Route path="/protected" element={<ProtectedPage />} />
           </Routes>
         </main>
       </div>
