@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { TokenResponse } from '../types/token.interface'
+import type { TokenResponse } from '../types/token.interface.ts'
 
 const useApi = () => {
   const [api] = useState<ReturnType<typeof axios.create>>(() => {

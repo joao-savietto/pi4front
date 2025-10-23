@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 // Define types for auth context
 interface AuthContextType {
@@ -9,7 +10,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-const AuthProvider = ({ children }: { children: ReactNode }) => {
+const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Check if tokens exist in localStorage
   const [user, setUser] = useState<any>(null);
   
@@ -21,19 +22,27 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (username: string, password: string) => {
-    // Call API endpoint for login
-    // ... similar to LoginPage's code
-    // Store tokens in localStorage
-    // Set user state
+    // Create axios instance with base URL and default headers
+    const api = axios.create({
+      baseURL: 'https://esp.savietto.app/',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     
-    // Example:
     try {
+      // Call API endpoint for login
       const response = await api.post('/auth/login', { username, password });
+      
+      // Extract access token from response  
       const { access_token: accessToken } = response.data;
+      
+      // Store tokens in localStorage and set user state
       localStorage.setItem('user', JSON.stringify({ accessToken }));
       setUser({ accessToken });
     } catch (error) {
       console.error(error);
+      throw error;  // Re-throw to let calling components handle the error
     }
   }; 
 

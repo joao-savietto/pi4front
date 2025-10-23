@@ -1,18 +1,19 @@
 // Shared layout component with navbar and authentication logic
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import useApi from '../hooks/useApi'
+import { useContext } from 'react'
+import { AuthContext } from '../context/AuthContext'
 
 const SharedLayout: React.FC = () => {
-  // Extract tokens from useApi hook 
-  const { getTokens, clearTokens } = useApi()
-  
-  // Check if user is authenticated (you might want to add more logic here)
-  const isAuthenticated = !!getTokens().access_token
-  
+  const authContext = useContext(AuthContext)
   const navigate = useNavigate()
   
+  // Check if user is authenticated using AuthContext
+  const isAuthenticated = !!authContext?.user
+  
   const handleLogout = () => {
-    clearTokens()
+    if (authContext) {
+      authContext.logout()
+    }
     navigate('/login')
   }
   
@@ -35,15 +36,19 @@ const SharedLayout: React.FC = () => {
                 <Link to="/" className="px-3 py-2 rounded-md hover:bg-gray-100">Home</Link>
                 {isAuthenticated ? (
                   <>
-                    <Link to="/login" className="px-3 py-2 rounded-md hover:bg-gray-100">Login</Link>
+                    {/* Show logout when authenticated */}
+                    <button onClick={handleLogout} className="px-3 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      Logout
+                    </button>
                   </>
                 ) : (
                   <>
+                    {/* Show login when not authenticated */}
                     <Link to="/login" className="px-3 py-2 rounded-md hover:bg-gray-100">Login</Link>
                   </>
                 )}
               </div>
-            </div
+            </div>
             
             {/* User dropdown */}
             {isAuthenticated && (
@@ -60,13 +65,6 @@ const SharedLayout: React.FC = () => {
                   </p>
                 </div>
               </div>
-            )}
-            
-            {/* Logout button */}
-            {isAuthenticated && (
-              <button onClick={handleLogout} className="px-3 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              Logout
-            </button>
             )}
           </div>
         </div>
