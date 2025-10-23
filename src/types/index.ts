@@ -1,4 +1,3 @@
-// Define types for our Redux store
 export interface CounterState {
   value: number;
 }

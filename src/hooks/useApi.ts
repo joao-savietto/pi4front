@@ -1,41 +1,38 @@
-// Custom hook to provide configured Axios instance with interceptors
-import { useMemo } from 'react'
-import { apiClient as ApiClient } from '../utils/api'
+import { useState } from 'react'
+import axios from 'axios'
+import { TokenResponse } from '../types/token.interface'
 
-export const useApi = () => {
-  // Create a memoized API client instance that won't change between renders
-  const api = useMemo(() => {
-    return ApiClient
-  }, [])
+const useApi = () => {
+  const [api] = useState<ReturnType<typeof axios.create>>(() => {
+    // Create axios instance with base URL and default headers
+    return axios.create({
+      baseURL: 'https://esp.savietto.app/',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  })
 
-  // Function to manually set tokens (useful for login flows)
-  const setTokens = (accessToken: string, refreshToken?: string) => {
-    localStorage.setItem('accessToken', accessToken)
-    if (refreshToken) {
-      localStorage.setItem('refreshToken', refreshToken)
-    }
+  const setTokens = (accessToken: string, refreshToken: string) => {
+    localStorage.setItem('access_token', accessToken)
+    localStorage.setItem('refresh_token', refreshToken)
   }
 
-  // Function to clear stored tokens
-  const clearTokens = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-  }
-
-  // Function to get stored tokens
+  // Get tokens from local storage
   const getTokens = () => {
     return {
-      accessToken: localStorage.getItem('accessToken'),
-      refreshToken: localStorage.getItem('refreshToken')
+      access_token: localStorage.getItem('access_token') || '',
+      refresh_token: localStorage.getItem('refresh_token') || ''
     }
   }
 
-  return {
-    api,
-    setTokens,
-    clearTokens,
-    getTokens
+  // Clear tokens from local storage
+  const clearTokens = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
   }
+
+  return { api, setTokens, getTokens, clearTokens }
 }
 
 export default useApi

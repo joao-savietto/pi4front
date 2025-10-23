@@ -1,0 +1,83 @@
+// Shared layout component with navbar and authentication logic
+import { Outlet, Link, useNavigate } from 'react-router-dom'
+import useApi from '../hooks/useApi'
+
+const SharedLayout: React.FC = () => {
+  // Extract tokens from useApi hook 
+  const { getTokens, clearTokens } = useApi()
+  
+  // Check if user is authenticated (you might want to add more logic here)
+  const isAuthenticated = !!getTokens().access_token
+  
+  const navigate = useNavigate()
+  
+  const handleLogout = () => {
+    clearTokens()
+    navigate('/login')
+  }
+  
+  // Format the contact string exactly as the original template did.
+  const formatContactString = (str: string) =>
+    str.split(" ").map(w => `${w.charAt(0).toUpperCase()}${w.slice(1)}`).join("");
+    
+  const userEmail = "+1 555‑123‑4567";
+  
+  
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Navigation */}
+      <nav className="bg-white shadow-md border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center space-x-8">
+              <Link to="/" className="text-xl font-bold text-blue-600">Pi4Front</Link>
+              <div className=" flex space-x-4">
+                <Link to="/" className="px-3 py-2 rounded-md hover:bg-gray-100">Home</Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/login" className="px-3 py-2 rounded-md hover:bg-gray-100">Login</Link>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="px-3 py-2 rounded-md hover:bg-gray-100">Login</Link>
+                  </>
+                )}
+              </div>
+            </div
+            
+            {/* User dropdown */}
+            {isAuthenticated && (
+              <div className="relative flex items-center space-x-3">
+                <img
+                  src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=100&q=80"
+                  alt="User Avatar"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div className="flex-grow text-left">
+                  <p className="font-mono text-xs uppercase">Admin</p>
+                  <p id="user-email-display" className="text-sm font-medium truncate">
+                    {formatContactString(userEmail)}
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {/* Logout button */}
+            {isAuthenticated && (
+              <button onClick={handleLogout} className="px-3 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Logout
+            </button>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 py-8 flex-grow">
+        <Outlet />
+      </main>
+    </div>
+  )
+}
+
+export default SharedLayout
