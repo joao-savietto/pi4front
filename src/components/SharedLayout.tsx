@@ -17,12 +17,6 @@ const SharedLayout: React.FC = () => {
     navigate('/login')
   }
   
-  // Format the contact string exactly as the original template did.
-  const formatContactString = (str: string) =>
-    str.split(" ").map(w => `${w.charAt(0).toUpperCase()}${w.slice(1)}`).join("");
-    
-  const userEmail = "+1 555‑123‑4567";
-  
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -33,9 +27,10 @@ const SharedLayout: React.FC = () => {
             <div className="flex items-center space-x-8">
               <Link to="/" className="text-xl font-bold text-blue-600">Pi4Front</Link>
               <div className=" flex space-x-4">
-                <Link to="/" className="px-3 py-2 rounded-md hover:bg-gray-100">Home</Link>
                 {isAuthenticated ? (
                   <>
+                    <Link to="/" className="px-3 py-2 rounded-md hover:bg-gray-100">Home</Link>
+                    <Link to="/protected" className="px-3 py-2 rounded-md hover:bg-gray-100">Protected Page</Link>
                     {/* Show logout when authenticated */}
                     <button onClick={handleLogout} className="px-3 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                       Logout
@@ -61,7 +56,7 @@ const SharedLayout: React.FC = () => {
                 <div className="flex-grow text-left">
                   <p className="font-mono text-xs uppercase">Admin</p>
                   <p id="user-email-display" className="text-sm font-medium truncate">
-                    {formatContactString(userEmail)}
+                    User
                   </p>
                 </div>
               </div>

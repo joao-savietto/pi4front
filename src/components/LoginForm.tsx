@@ -1,6 +1,5 @@
-// Simple login form component to demonstrate token handling
-import { useState } from 'react'
-import { useApi } from '../hooks/useApi'
+import { useState, useContext } from 'react'
+import { AuthContext } from '../context/AuthContext'
 
 interface LoginFormProps {
   onLoginSuccess?: () => void
@@ -10,34 +9,36 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { api, setTokens } = useApi()
+  const [isLoading, setIsLoading] = useState(false)
+  const authContext = useContext(AuthContext)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Reset previous errors
+    setError('')
+    setIsLoading(true)
+    
     try {
-      // Simulate API call to login
-      const response = await api.post('/auth/login', {
-        username,
-        password
-      })
+      if (!authContext) {
+        throw new Error('Auth context not available')
+      }
       
-      const { accessToken, refreshToken } = response.data
+      // Call the login function from AuthContext which will handle API call and token storage
+      await authContext.login(username, password)
       
-      // Store tokens in localStorage
-      setTokens(accessToken, refreshToken)
-      
-      // Reset form and show success
+      // Reset form 
       setUsername('')
       setPassword('')
-      setError('')
       
       if (onLoginSuccess) {
         onLoginSuccess()
       }
-    } catch (err) {
+    } catch (err: any) {
       setError('Invalid username or password')
       console.error('Login error:', err)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -82,9 +83,12 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
         
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+          disabled={isLoading}
+          className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          Login
+          {isLoading ? 'Logging in...' : 'Login'}
         </button>
       </form>
     </div>

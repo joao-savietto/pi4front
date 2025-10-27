@@ -4,6 +4,7 @@ import { AuthContext } from './context/AuthContext'
 import SharedLayout from './components/SharedLayout'
 import LoginPage from './components/LoginPage'
 import ProtectedPage from './pages/ProtectedPage'
+import HomePage from './pages/HomePage'
 
 // Define a protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,8 +33,9 @@ function App() {
           </ProtectedRoute>
         } 
       >
-        {/* Nested routes for protected pages */}
-        <Route index element={<ProtectedPage />} />
+        {/* Nested routes for protected pages - default to HomePage */}
+        <Route index element={<HomePage />} />
+        <Route path="protected" element={<ProtectedPage />} />
       </Route>
     </Routes>
   )
