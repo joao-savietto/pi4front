@@ -164,10 +164,7 @@ const HomePage = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            Server Rack Monitoring
-          </h1>
+        <div className="container mx-auto px-4 py-3 flex items-center">
           
           {/* Time Range Selector */}
           <div className="flex items-center gap-2">
@@ -201,7 +198,7 @@ const HomePage = () => {
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           ) : latest ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Temperature Card */}
               <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg">
                 <div className="flex justify-between items-start">
@@ -249,18 +246,6 @@ const HomePage = () => {
                     }`} 
                     style={{ width: `${(latest.humidity - 40) * (100/30)}%` }}
                   ></div>
-                </div>
-              </div>
-
-              {/* Additional Stats */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg">
-                <h3 className="text-slate-400 text-sm font-medium">Uptime</h3>
-                <p className="text-2xl font-bold mt-2">99.98%</p>
-                <div className="mt-4 flex items-center text-green-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Operational</span>
                 </div>
               </div>
 
@@ -318,24 +303,6 @@ const HomePage = () => {
           ))}
         </section>
 
-        {/* Navigation Buttons - Keep the original buttons at bottom */}
-        <footer className="mt-12 py-6 border-t border-slate-800 text-center">
-          <div className="flex justify-center gap-4">
-            <button 
-              onClick={() => window.location.href='/protected'}
-              className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 mr-2"
-            >
-              Go to Protected Page
-            </button>
-            
-            <button 
-              onClick={() => window.location.href='/login'}
-              className="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition duration-200"
-            >
-              Logout
-            </button>
-          </div>
-        </footer>
       </main>
     </div>
   );

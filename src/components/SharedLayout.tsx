@@ -42,7 +42,7 @@ const SharedLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navigation */}
-      <nav className="bg-[#0a0e21] shadow-md border-b border-[#0d1b36] text-white sticky top-0 z-10">
+      <nav className="bg-[#101429] shadow-md border-b border-[#0d1b36] text-white sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-8">
