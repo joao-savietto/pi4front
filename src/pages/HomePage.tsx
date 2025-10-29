@@ -1,48 +1,344 @@
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 
-const HomePage = () => {
-  const navigate = useNavigate()
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md w-full mx-4">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Welcome to Pi4Front</h1>
-        <p className="mb-6 text-gray-600">
-          You've successfully logged in! This is your home page.
-        </p>
-        
-        <div className="bg-blue-50 p-4 rounded-lg mb-6">
-          <h2 className="text-xl font-semibold mb-2">Dashboard Overview</h2>
-          <p className="text-gray-600 mb-4">Here's what you can do:</p>
-          <ul className="text-left space-y-2 text-sm">
-            <li className="flex items-center">
-              <span className="mr-2">•</span> Manage your account settings
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2">•</span> View your recent activities
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2">•</span> Access protected resources
-            </li>
-          </ul>
-        </div>
-        
-        <button 
-          onClick={() => navigate('/protected')}
-          className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 mr-2"
-        >
-          Go to Protected Page
-        </button>
-        
-        <button 
-          onClick={() => navigate('/login')}
-          className="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition duration-200"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  )
+// Types
+interface Measurement {
+  timestamp: Date;
+  temperature: number; // in °C
+  humidity: number;   // in %
 }
 
-export default HomePage
+interface TimeRange {
+  label: string;
+  value: number;       // in hours
+}
+
+// Mock data generator
+const generateMockData = (rangeHours: number): Measurement[] => {
+  const now = new Date();
+  const measurements: Measurement[] = [];
+  
+  for (let i = rangeHours * 60 - 1; i >= 0; i--) {
+    const minutesAgo = i;
+    const timestamp = new Date(now.getTime() - minutesAgo * 60000);
+    
+    // Simulate temperature between 20-35°C
+    const temp = 20 + (Math.sin(i / 10) * 8 + Math.random() * 2);
+    
+    // Simulate humidity between 40-70%
+    const hum = 50 + (Math.cos(i / 8) * 10 + Math.random() * 5);
+    
+    measurements.push({
+      timestamp,
+      temperature: parseFloat(temp.toFixed(1)),
+      humidity: parseFloat(hum.toFixed(1))
+    });
+  }
+  
+  return measurements;
+};
+
+const HomePage = () => {
+  const [timeRange, setTimeRange] = useState<TimeRange>({ label: 'Last 24 Hours', value: 24 });
+  const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Time range options
+  const timeRanges: TimeRange[] = [
+    { label: 'Last 1 Hour', value: 1 },
+    { label: 'Last 6 Hours', value: 6 },
+    { label: 'Last 24 Hours', value: 24 },
+    { label: 'Last 7 Days', value: 168 }
+  ];
+  
+  useEffect(() => {
+    // Simulate API call
+    setLoading(true);
+    setTimeout(() => {
+      setMeasurements(generateMockData(timeRange.value));
+      setLoading(false);
+    }, 800);
+  }, [timeRange]);
+  
+  // Get latest measurement
+  const latest = measurements.length ? measurements[0] : null;
+  
+  // Prepare chart data
+  const chartData = {
+    labels: measurements.map(m => 
+      m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    ),
+    
+    datasets: [
+      {
+        label: 'Temperature (°C)',
+        data: measurements.map(m => m.temperature),
+        borderColor: '#0ea5e9',
+        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+        tension: 0.4,
+        fill: true
+      },
+      {
+        label: 'Humidity (%)',
+        data: measurements.map(m => m.humidity),
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        tension: 0.4,
+        fill: true
+      }
+    ]
+  };
+  
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: '#e2e8f0',
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#cbd5e1',
+        bodyColor: '#e2e8f0',
+        borderColor: '#334155',
+        borderWidth: 1,
+        padding: 12,
+        boxPadding: 4,
+        usePointStyle: true,
+        callbacks: {
+          label: (context: any) => {
+            const dataset = context.datasetIndex;
+            return `${chartData.datasets[dataset].label}: ${context.parsed.y}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(100, 116, 139, 0.2)'
+        },
+        ticks: {
+          color: '#94a3b8'
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(100, 116, 139, 0.2)'
+        },
+        ticks: {
+          color: '#94a3b8'
+        }
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      {/* Header */}
+      <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+            Server Rack Monitoring
+          </h1>
+          
+          {/* Time Range Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400 text-sm">Time Range:</span>
+            <div className="bg-slate-800 rounded-lg p-1 flex">
+              {timeRanges.map((range) => (
+                <button
+                  key={range.value}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-3 py-1 rounded-md text-sm transition-all ${
+                    timeRange.label === range.label
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Current Measurement Card */}
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold mb-4 text-slate-300">Current Status</h2>
+          
+          {loading ? (
+            <div className="bg-slate-800/50 rounded-xl p-6 flex justify-center items-center h-32">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : latest ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Temperature Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-slate-400 text-sm font-medium">Temperature</h3>
+                  <div className={`px-2 py-1 rounded-full text-xs ${
+                    latest.temperature > 32 
+                      ? 'bg-red-500/20 text-red-400' 
+                      : 'bg-green-500/20 text-green-400'
+                  }`}>
+                    {latest.temperature > 32 ? 'High' : 'Normal'}
+                  </div>
+                </div>
+                <p className="text-3xl font-bold mt-2">
+                  {latest.temperature}°<span className="text-lg">C</span>
+                </p>
+                <div className="mt-4 h-1 bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${
+                      latest.temperature > 32 ? 'bg-red-500' : 'bg-green-500'
+                    }`} 
+                    style={{ width: `${(latest.temperature - 20) * (100/15)}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Humidity Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-slate-400 text-sm font-medium">Humidity</h3>
+                  <div className={`px-2 py-1 rounded-full text-xs ${
+                    latest.humidity > 65 
+                      ? 'bg-yellow-500/20 text-yellow-400' 
+                      : 'bg-green-500/20 text-green-400'
+                  }`}>
+                    {latest.humidity > 65 ? 'High' : 'Normal'}
+                  </div>
+                </div>
+                <p className="text-3xl font-bold mt-2">
+                  {latest.humidity}<span className="text-lg">%</span>
+                </p>
+                <div className="mt-4 h-1 bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${
+                      latest.humidity > 65 ? 'bg-yellow-500' : 'bg-green-500'
+                    }`} 
+                    style={{ width: `${(latest.humidity - 40) * (100/30)}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Additional Stats */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg">
+                <h3 className="text-slate-400 text-sm font-medium">Uptime</h3>
+                <p className="text-2xl font-bold mt-2">99.98%</p>
+                <div className="mt-4 flex items-center text-green-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Operational</span>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg">
+                <h3 className="text-slate-400 text-sm font-medium">Last Update</h3>
+                <p className="mt-2 text-slate-300">
+                  {latest.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </section>
+
+        {/* Charts Section */}
+        <section>
+          <h2 className="text-lg font-semibold mb-4 text-slate-300">Historical Data</h2>
+          
+          {loading ? (
+            <div className="bg-slate-800/50 rounded-xl p-6 flex justify-center items-center h-96">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-slate-700 shadow-lg">
+              <Line 
+                data={chartData} 
+                options={chartOptions} 
+                className="h-[500px]"
+              />
+            </div>
+          )}
+        </section>
+
+        {/* Status Indicators */}
+        <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { title: 'Fan Status', status: 'Online', color: 'green' },
+            { title: 'Power Supply', status: 'Normal', color: 'green' },
+            { title: 'Cooling System', status: 'Maintenance', color: 'yellow' }
+          ].map((item, index) => (
+            <div 
+              key={index} 
+              className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700 shadow-lg"
+            >
+              <h3 className="text-slate-400 text-sm font-medium mb-2">{item.title}</h3>
+              <div className="flex items-center">
+                <div className={`w-3 h-3 rounded-full mr-2 bg-${item.color}-500`}></div>
+                <span className={`font-medium ${
+                  item.color === 'green' ? 'text-green-400' : 
+                  item.color === 'yellow' ? 'text-yellow-400' : 'text-red-400'
+                }`}>
+                  {item.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* Navigation Buttons - Keep the original buttons at bottom */}
+        <footer className="mt-12 py-6 border-t border-slate-800 text-center">
+          <div className="flex justify-center gap-4">
+            <button 
+              onClick={() => window.location.href='/protected'}
+              className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 mr-2"
+            >
+              Go to Protected Page
+            </button>
+            
+            <button 
+              onClick={() => window.location.href='/login'}
+              className="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition duration-200"
+            >
+              Logout
+            </button>
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+export default HomePage;
