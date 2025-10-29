@@ -1,11 +1,13 @@
 // Shared layout component with navbar and authentication logic
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { useContext } from 'react'
+import { useContext, useState, useRef, useEffect } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { FaUser } from 'react-icons/fa'
 
 const SharedLayout: React.FC = () => {
   const authContext = useContext(AuthContext)
   const navigate = useNavigate()
+  const [showDropdown, setShowDropdown] = useState(false)
   
   // Check if user is authenticated using AuthContext
   const isAuthenticated = !!authContext?.user
@@ -15,31 +17,46 @@ const SharedLayout: React.FC = () => {
       authContext.logout()
     }
     navigate('/login')
+    setShowDropdown(false)
   }
+  
+  // Close dropdown when clicking outside
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if ((dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) &&
+          (buttonRef.current && !buttonRef.current.contains(event.target as Node))) {
+        setShowDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
   
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navigation */}
-      <nav className="bg-white shadow-md border-b border-gray-200">
+      <nav className="bg-[#0a0e21] shadow-md border-b border-[#0d1b36] text-white sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-8">
-              <Link to="/" className="text-xl font-bold text-blue-600">Pi4Front</Link>
+              <Link to="/" className="text-xl font-bold">Monitor</Link>
               <div className=" flex space-x-4">
                 {isAuthenticated ? (
                   <>
-                    <Link to="/" className="px-3 py-2 rounded-md hover:bg-gray-100">Home</Link>
-                    <Link to="/protected" className="px-3 py-2 rounded-md hover:bg-gray-100">Protected Page</Link>
-                    {/* Show logout when authenticated */}
-                    <button onClick={handleLogout} className="px-3 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      Logout
-                    </button>
+                    <Link to="/" className="px-3 py-2 rounded-md hover:bg-[#0d1b36]">Home</Link>
+                    <Link to="/protected" className="px-3 py-2 rounded-md hover:bg-[#0d1b36]">Protected Page</Link>
                   </>
                 ) : (
                   <>
                     {/* Show login when not authenticated */}
-                    <Link to="/login" className="px-3 py-2 rounded-md hover:bg-gray-100">Login</Link>
+                    <Link to="/login" className="px-3 py-2 rounded-md hover:bg-[#0d1b36]">Login</Link>
                   </>
                 )}
               </div>
@@ -47,18 +64,31 @@ const SharedLayout: React.FC = () => {
             
             {/* User dropdown */}
             {isAuthenticated && (
-              <div className="relative flex items-center space-x-3">
-                <img
-                  src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=100&q=80"
-                  alt="User Avatar"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div className="flex-grow text-left">
-                  <p className="font-mono text-xs uppercase">Admin</p>
-                  <p id="user-email-display" className="text-sm font-medium truncate">
-                    User
-                  </p>
-                </div>
+              <div className="relative flex items-center">
+                <button 
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  ref={buttonRef}
+                  className="flex items-center focus:outline-none cursor-pointer"
+                >
+                  <FaUser className="w-6 h-6 text-white" />
+                </button>
+                {showDropdown && (
+                  <div 
+                    ref={dropdownRef} 
+                    className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e21] border border-[#0d1b36] rounded-md shadow-lg py-1 z-50 transition-opacity duration-200 ease-in-out"
+                  >
+                    <p className="px-4 py-2 text-sm font-medium">Admin</p>
+                    <p id="user-email-display" className="px-4 py-1 text-xs truncate">
+                      User
+                    </p>
+                    <button 
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-[#0d1b36]"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -67,7 +97,9 @@ const SharedLayout: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8 flex-grow">
-        <Outlet />
+        <div className="w-full">
+          <Outlet />
+        </div>
       </main>
     </div>
   )
