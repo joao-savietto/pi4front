@@ -50,8 +50,8 @@ const SharedLayout: React.FC = () => {
               <div className=" flex space-x-4">
                 {isAuthenticated ? (
                   <>
-                    <Link to="/" className="px-3 py-2 rounded-md hover:bg-[#0d1b36]">Home</Link>
-                    <Link to="/protected" className="px-3 py-2 rounded-md hover:bg-[#0d1b36]">Protected Page</Link>
+                    <Link to="/" className="px-3 py-2 rounded-md hover:bg-[#0d1b36]">Dashboard</Link>
+                    <Link to="/protected" className="px-3 py-2 rounded-md hover:bg-[#0d1b36]">Controle de Usuários</Link>
                   </>
                 ) : (
                   <>
