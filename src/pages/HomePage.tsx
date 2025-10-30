@@ -100,6 +100,21 @@ const HomePage = () => {
   // Get latest measurement
   const latest = measurements.length ? measurements[0] : null;
 
+  // Function to refresh data
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const refreshData = () => {
+    // Set refreshing state to provide visual feedback
+    setIsRefreshing(true);
+    
+    // Force re-render by creating a new object with same values
+    // This ensures useEffect is triggered even when the values are identical 
+    setTimeRange({ ...timeRange });
+    
+    // Reset refreshing state after a short delay (to show the refresh effect)
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
   // Prepare chart data
   const chartData = {
     labels: measurements.map(m =>
@@ -244,6 +259,26 @@ const HomePage = () => {
                 </div>
                 <p className="text-2xl font-bold mt-2 text-slate-300">
                   {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+                <p 
+                  className="mt-2 text-blue-400 hover:text-blue-300 cursor-pointer flex items-center"
+                  onClick={refreshData}
+                >
+                  {isRefreshing ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Refreshing...
+                    </>
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Atualizar dados
+                    </>
+                  )}
                 </p>                
               </div>
             </div>
