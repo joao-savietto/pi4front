@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import useApi from '../hooks/useApi';
 
 // Register Chart.js components
 ChartJS.register(
@@ -34,32 +35,8 @@ interface TimeRange {
   value: number;       // in hours
 }
 
-// Mock data generator
-const generateMockData = (rangeHours: number): Measurement[] => {
-  const now = new Date();
-  const measurements: Measurement[] = [];
-  
-  for (let i = rangeHours * 60 - 1; i >= 0; i--) {
-    const minutesAgo = i;
-    const timestamp = new Date(now.getTime() - minutesAgo * 60000);
-    
-    // Simulate temperature between 20-35°C
-    const temp = 20 + (Math.sin(i / 10) * 8 + Math.random() * 2);
-    
-    // Simulate humidity between 40-70%
-    const hum = 50 + (Math.cos(i / 8) * 10 + Math.random() * 5);
-    
-    measurements.push({
-      timestamp,
-      temperature: parseFloat(temp.toFixed(1)),
-      humidity: parseFloat(hum.toFixed(1))
-    });
-  }
-  
-  return measurements;
-};
-
 const HomePage = () => {
+  const { api } = useApi();
   const [timeRange, setTimeRange] = useState<TimeRange>({ label: 'Last 24 Hours', value: 24 });
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,14 +48,54 @@ const HomePage = () => {
     { label: 'Last 24 Hours', value: 24 },
     { label: 'Last 7 Days', value: 168 }
   ];
-  
+
+  // Helper function to calculate start and end times
+  const getTimeRangeParams = (rangeHours: number) => {
+    const now = new Date();
+    const endTime = now.toISOString(); 
+    const startTime = new Date(now.getTime() - rangeHours * 60 * 60 * 1000).toISOString();
+    
+    return { startTime, endTime };
+  };
+
+  // Function to transform API response to Measurement format
+  const transformApiResponse = (data: any[]): Measurement[] => {
+    return data.map(item => ({
+      timestamp: new Date(item.timestamp),
+      temperature: item.temperature,
+      humidity: item.humidity
+    })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  };
+
   useEffect(() => {
-    // Simulate API call
-    setLoading(true);
-    setTimeout(() => {
-      setMeasurements(generateMockData(timeRange.value));
-      setLoading(false);
-    }, 800);
+    const fetchMeasurements = async () => {
+      setLoading(true);
+      
+      try {
+        // Get time range parameters for API call
+        const { startTime, endTime } = getTimeRangeParams(timeRange.value);
+        
+        // Make API request with query parameters
+        const response = await api.get('/measurements/', {
+          params: {
+            start_time: startTime,
+            end_time: endTime
+          }
+        });
+        
+        // Transform the data to match our expected format
+        const transformedData = transformApiResponse(response.data);
+        setMeasurements(transformedData);
+      } catch (error) {
+        console.error('Error fetching measurements:', error);
+        // In case of error, we could show an empty state or use fallback data
+        setMeasurements([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeasurements();
   }, [timeRange]);
   
   // Get latest measurement
