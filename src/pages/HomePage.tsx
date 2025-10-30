@@ -164,7 +164,7 @@ const HomePage = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3 flex items-center">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           
           {/* Time Range Selector */}
           <div className="flex items-center gap-2">
