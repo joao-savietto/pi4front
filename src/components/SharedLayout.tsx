@@ -42,7 +42,7 @@ const SharedLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navigation */}
-      <nav className="bg-[#101429] shadow-md border-b border-[#0d1b36] text-white sticky top-0 z-10">
+      <nav className="bg-[#101429] shadow-md border-b border-[#0d1b36] text-white sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-8">
@@ -75,15 +75,15 @@ const SharedLayout: React.FC = () => {
                 {showDropdown && (
                   <div 
                     ref={dropdownRef} 
-                    className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e21] border border-[#0d1b36] rounded-md shadow-lg py-1 z-50 transition-opacity duration-200 ease-in-out"
+                    className="absolute right-0 top-full mt-2 w-48 bg-[#1a237e] border border-[#37474f] rounded-md shadow-xl py-2 z-50 transition-opacity duration-200 ease-in-out"
                   >
-                    <p className="px-4 py-2 text-sm font-medium">Admin</p>
-                    <p id="user-email-display" className="px-4 py-1 text-xs truncate">
+                    <p className="px-4 py-2 text-sm font-medium text-white">Admin</p>
+                    <p id="user-email-display" className="px-4 py-1 text-xs truncate text-gray-300">
                       User
                     </p>
                     <button 
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm hover:bg-[#0d1b36]"
+                      className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#283593] transition-colors duration-150"
                     >
                       Logout
                     </button>
