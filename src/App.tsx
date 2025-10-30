@@ -5,6 +5,7 @@ import SharedLayout from './components/SharedLayout'
 import LoginPage from './components/LoginPage'
 import ProtectedPage from './pages/ProtectedPage'
 import HomePage from './pages/HomePage'
+import RedirectIfAuthenticated from './components/RedirectIfAuthenticated'
 
 // Define a protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -21,8 +22,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function App() {
   return (
     <Routes>
-      {/* Login Route */}
-      <Route path="/login" element={<LoginPage />} />
+      {/* Login Route - with redirect for authenticated users */}
+      <Route 
+        path="/login" 
+        element={
+          <RedirectIfAuthenticated>
+            <LoginPage />
+          </RedirectIfAuthenticated>
+        } 
+      />
       
       {/* Protected Routes with Layout */}
       <Route 
