@@ -43,9 +43,9 @@ const LoginPage: React.FC = () => {
       
       // Check for 401 status code specifically
       if (err.response && err.response.status === 401) {
-        setError('Invalid username or password')
+        setError('Usuário ou senha inválidos')
       } else {
-        setError('Internal server error. Please try again later.')
+        setError('Erro interno. Tente novamente mais tarde.')
       }
       
       // Show modal for errors
@@ -97,7 +97,7 @@ const LoginPage: React.FC = () => {
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full px-4 py-3 bg-[rgba(15,20,35,0.6)] border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder:text-white/50"
                     required
-                    placeholder="Enter your username"
+                    placeholder="Insira seu usuário"
                   />
                 </div>
                 
@@ -112,7 +112,7 @@ const LoginPage: React.FC = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 bg-[rgba(15,20,35,0.6)] border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder:text-white/50"
                     required
-                    placeholder="Enter your password"
+                    placeholder="Insira sua senha"
                   />
                 </div>
                 
@@ -140,13 +140,13 @@ const LoginPage: React.FC = () => {
       {showErrorModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-[rgba(10,14,33,0.9)] backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
-            <h3 className="text-2xl font-bold text-red-400 mb-4">Login Error</h3>
+            <h3 className="text-2xl font-bold text-red-400 mb-4">Erro de login</h3>
             <p className="text-white/80 mb-8">{error}</p>
             <button
               onClick={closeModal}
               className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg hover:from-blue-700 hover:to-blue-800 transition duration-200 font-medium"
             >
-              Close
+              Fechar
             </button>
           </div>
         </div>

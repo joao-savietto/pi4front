@@ -98,7 +98,7 @@ const HomePage = () => {
   }, [timeRange]);
 
   // Get latest measurement
-  const latest = measurements.length ? measurements[0] : null;
+  const latest = measurements.length ? measurements.reverse()[0] : null;
 
   // Function to refresh data
   const [isRefreshing, setIsRefreshing] = useState(false);
