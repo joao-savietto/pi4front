@@ -19,46 +19,46 @@ const LoginPage: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     // Reset previous errors
-    setError('')
-    setIsLoading(true)
+    setError('');
+    setIsLoading(true);
     
     try {
       if (!authContext) {
-        throw new Error('Auth context not available')
+        throw new Error('Contexto de autenticação não disponível');
       }
       
       // Call the login function from AuthContext which will handle API call and token storage
-      await authContext.login(username, password)
+      await authContext.login(username, password);
       
       // Reset form 
-      setUsername('')
-      setPassword('')
+      setUsername('');
+      setPassword('');
       
-      handleLoginSuccess()
+      handleLoginSuccess();
     } catch (err: any) {
-      console.error('Login error:', err)
+      console.error('Erro no login:', err);
       
       // Check for 401 status code specifically
       if (err.response && err.response.status === 401) {
-        setError('Usuário ou senha inválidos')
+        setError('Usuário ou senha inválidos');
       } else {
-        setError('Erro interno. Tente novamente mais tarde.')
+        setError('Erro interno. Tente novamente mais tarde.');
       }
       
       // Show modal for errors
-      setShowErrorModal(true)
+      setShowErrorModal(true);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
   const closeModal = () => {
-    setShowErrorModal(false)
-    setError('')
-  }
+    setShowErrorModal(false);
+    setError('');
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#0a0e21] to-[#0d1b36] flex items-center justify-center p-4">
@@ -74,7 +74,7 @@ const LoginPage: React.FC = () => {
           <div className="p-8 sm:p-10">
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-white mb-2">Bem-vindo de volta</h1>
-              <p className="text-[#93c5fd]">Faça login na your account</p>
+              <p className="text-[#93c5fd]">Faça login na sua conta</p>
             </div>
 
             {error && !showErrorModal && (
@@ -88,7 +88,7 @@ const LoginPage: React.FC = () => {
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label htmlFor="username" className="block text-white/80 mb-2 font-medium">
-                    Username
+                    Usuário
                   </label>
                   <input
                     type="text"
@@ -103,7 +103,7 @@ const LoginPage: React.FC = () => {
                 
                 <div className="mb-6">
                   <label htmlFor="password" className="block text-white/80 mb-2 font-medium">
-                    Password
+                    Senha
                   </label>
                   <input
                     type="password"
@@ -123,7 +123,7 @@ const LoginPage: React.FC = () => {
                     isLoading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
-                  {isLoading ? 'Logging in...' : 'Login'}
+                  {isLoading ? 'Entrando...' : 'Entrar'}
                 </button>
               </form>
             </div>
