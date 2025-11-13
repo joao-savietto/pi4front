@@ -46,7 +46,7 @@ const SharedLayout: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-8">
-              <Link to="/" className="text-xl font-bold">Monitor</Link>
+              <Link to="/" className="text-xl font-bold">Monitor: PI4</Link>
               <div className=" flex space-x-4">
                 {isAuthenticated ? (
                   <>

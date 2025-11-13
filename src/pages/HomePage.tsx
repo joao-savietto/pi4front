@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import useApi from '../hooks/useApi';
-import type { MeasurementAnomaly, AnomalyClassification } from '../types';
+import type { MeasurementAnomaly } from '../types';
 
 // Register Chart.js components
 ChartJS.register(
@@ -332,7 +332,7 @@ const HomePage = () => {
           ) : latest ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Temperature Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+              <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-slate-400 text-sm font-medium">Temperatura</h3>
                   <div className={`px-2 py-1 rounded-full text-xs ${
@@ -355,7 +355,7 @@ const HomePage = () => {
               </div>
 
               {/* Humidity Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+              <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-slate-400 text-sm font-medium">Umidade</h3>
                   <div className={`px-2 py-1 rounded-full text-xs ${
@@ -378,7 +378,7 @@ const HomePage = () => {
               </div>
 
               {/* Last Update Card - Updated with proper alignment */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+              <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-slate-400 text-sm font-medium">Última atualização</h3>
                   {/* Dummy badge with similar width to other badges */}
@@ -459,7 +459,7 @@ const HomePage = () => {
           ) : statistics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Temperature Min Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+              <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
                 <h3 className="text-slate-400 text-sm font-medium mb-2">Temperatura Mínima</h3>
                 <p className="text-3xl font-bold mt-2">
                   {statistics.temperature_min.toFixed(1)}°<span className="text-lg">C</span>
@@ -467,7 +467,7 @@ const HomePage = () => {
               </div>
 
               {/* Temperature Max Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+              <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
                 <h3 className="text-slate-400 text-sm font-medium mb-2">Temperatura Máxima</h3>
                 <p className="text-3xl font-bold mt-2">
                   {statistics.temperature_max.toFixed(1)}°<span className="text-lg">C</span>
@@ -475,7 +475,7 @@ const HomePage = () => {
               </div>
 
               {/* Temperature Avg Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+              <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
                 <h3 className="text-slate-400 text-sm font-medium mb-2">Temperatura Média</h3>
                 <p className="text-3xl font-bold mt-2">
                   {statistics.temperature_avg.toFixed(1)}°<span className="text-lg">C</span>
@@ -483,7 +483,7 @@ const HomePage = () => {
               </div>
 
               {/* Humidity Avg Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+              <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
                 <h3 className="text-slate-400 text-sm font-medium mb-2">Umidade Média</h3>
                 <p className="text-3xl font-bold mt-2">
                   {statistics.humidity_avg.toFixed(1)}<span className="text-lg">%</span>
