@@ -59,12 +59,48 @@ const HomePage = () => {
   };
 
   // Function to transform API response to Measurement format
-  const transformApiResponse = (data: any[]): Measurement[] => {
-    return data.map(item => ({
+  const transformApiResponse = (data: { measurements: any[] }): Measurement[] => {
+    return data.measurements.map(item => ({
       timestamp: new Date(item.timestamp),
       temperature: item.temperature,
       humidity: item.humidity
     })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  };
+
+  // Function to fetch all pages of measurements
+  const fetchAllMeasurements = async (startTime: string, endTime: string) => {
+    let allMeasurements: any[] = [];
+    let page = 1;
+    let hasMorePages = true;
+
+    while (hasMorePages) {
+      try {
+        const response = await api.get('/measurements/', {
+          params: {
+            start_time: startTime,
+            end_time: endTime,
+            page: page,
+            page_size: 100,  // Maximum allowed page size
+            min_interval_minutes: 15  // 15-minute interval filtering
+          }
+        });
+
+        const pageData = response.data;
+        allMeasurements = [...allMeasurements, ...pageData.measurements];
+
+        // Check if there are more pages
+        if (page >= pageData.total_pages || pageData.measurements.length === 0) {
+          hasMorePages = false;
+        } else {
+          page++;
+        }
+      } catch (error) {
+        console.error(`Error fetching page ${page}:`, error);
+        hasMorePages = false;
+      }
+    }
+
+    return allMeasurements;
   };
 
   useEffect(() => {
@@ -75,16 +111,11 @@ const HomePage = () => {
         // Get time range parameters for API call
         const { startTime, endTime } = getTimeRangeParams(timeRange.value);
 
-        // Make API request with query parameters
-        const response = await api.get('/measurements/', {
-          params: {
-            start_time: startTime,
-            end_time: endTime
-          }
-        });
+        // Fetch all pages of measurements with 15-minute intervals
+        const allMeasurements = await fetchAllMeasurements(startTime, endTime);
 
         // Transform the data to match our expected format
-        const transformedData = transformApiResponse(response.data);
+        const transformedData = transformApiResponse({ measurements: allMeasurements });
         setMeasurements(transformedData);
       } catch (error) {
         console.error('Erro ao buscar medições:', error);
@@ -115,10 +146,34 @@ const HomePage = () => {
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
+  // Helper function to format timestamp based on time range
+  const formatTimestampForChart = (timestamp: Date, rangeHours: number): string => {
+    if (rangeHours <= 1) {
+      // For 1 hour or less, show HH:MM
+      return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (rangeHours <= 24) {
+      // For 24 hours or less, show HH:MM DD/MM
+      return timestamp.toLocaleString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit'
+      });
+    } else {
+      // For longer periods, show DD/MM HH:MM
+      return timestamp.toLocaleString([], { 
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit', 
+        minute: '2-digit'
+      });
+    }
+  };
+
   // Prepare chart data
   const chartData = {
     labels: measurements.map(m =>
-      m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      formatTimestampForChart(m.timestamp, timeRange.value)
     ),
 
     datasets: [
