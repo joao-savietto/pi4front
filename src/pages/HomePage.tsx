@@ -11,6 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import useApi from '../hooks/useApi';
+import type { MeasurementAnomaly, AnomalyClassification } from '../types';
 
 // Register Chart.js components
 ChartJS.register(
@@ -35,18 +36,32 @@ interface TimeRange {
   value: number;       // em horas
 }
 
+interface Statistics {
+  count: number;
+  temperature_min: number;
+  temperature_max: number;
+  temperature_avg: number;
+  humidity_min: number;
+  humidity_max: number;
+  humidity_avg: number;
+  earliest_timestamp: Date;
+  latest_timestamp: Date;
+}
+
 const HomePage = () => {
   const { api } = useApi();
   const [timeRange, setTimeRange] = useState<TimeRange>({ label: 'Últimas 24 horas', value: 24 });
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [anomalyData, setAnomalyData] = useState<MeasurementAnomaly[]>([]);
+  const [anomalyLoading, setAnomalyLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
   // Time range options
   const timeRanges: TimeRange[] = [
     { label: 'Última hora', value: 1 },
     { label: 'Últimas 6 horas', value: 6 },
-    { label: 'Últimas 24 horas', value: 24 },
-    { label: 'Últimos 7 dias', value: 168 }
+    { label: 'Últimas 24 horas', value: 24 }
   ];
 
   // Helper function to calculate start and end times
@@ -103,8 +118,56 @@ const HomePage = () => {
     return allMeasurements;
   };
 
+  // Function to fetch statistics
+  const fetchStatistics = async (startTime: string, endTime: string) => {
+    try {
+      const response = await api.get('/measurements/statistics', {
+        params: {
+          start_time: startTime,
+          end_time: endTime
+        }
+      });
+      
+      return {
+        ...response.data,
+        earliest_timestamp: new Date(response.data.earliest_timestamp),
+        latest_timestamp: new Date(response.data.latest_timestamp)
+      };
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+      return null;
+    }
+  };
+
+  // Function to fetch anomaly data
+  const fetchAnomalyData = async (startTime: string, endTime: string) => {
+    setAnomalyLoading(true);
+    try {
+      const response = await api.get('/anomaly/analyze-interval', {
+        params: {
+          start_time: startTime,
+          end_time: endTime,
+          min_interval_minutes: 15  // Same interval filtering as measurements
+        }
+      });
+
+      // Transform the anomaly data to match our expected format
+      const transformedAnomalyData = response.data.measurements.map((item: any) => ({
+        ...item,
+        timestamp: new Date(item.timestamp)
+      })).filter((item: MeasurementAnomaly) => item.is_anomalous); // Show only anomalous measurements
+
+      setAnomalyData(transformedAnomalyData);
+    } catch (error) {
+      console.error('Erro ao buscar dados de anomalias:', error);
+      setAnomalyData([]);
+    } finally {
+      setAnomalyLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMeasurements = async () => {
+    const fetchData = async () => {
       setLoading(true);
 
       try {
@@ -113,19 +176,27 @@ const HomePage = () => {
 
         // Fetch all pages of measurements with 15-minute intervals
         const allMeasurements = await fetchAllMeasurements(startTime, endTime);
+        
+        // Fetch statistics
+        const stats = await fetchStatistics(startTime, endTime);
+
+        // Fetch anomaly data
+        await fetchAnomalyData(startTime, endTime);
 
         // Transform the data to match our expected format
         const transformedData = transformApiResponse({ measurements: allMeasurements });
         setMeasurements(transformedData);
+        setStatistics(stats);
       } catch (error) {
-        console.error('Erro ao buscar medições:', error);
+        console.error('Erro ao buscar dados:', error);
         setMeasurements([]);
+        setStatistics(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMeasurements();
+    fetchData();
   }, [timeRange]);
 
   // Get latest measurement
@@ -340,6 +411,71 @@ const HomePage = () => {
           ) : null}
         </section>
 
+        {/* Statistics Cards */}
+        <section className="mb-8">
+          <h2 className="text-[24px] font-semibold mb-4 text-slate-300">Estatísticas do Período</h2>
+          
+          {loading ? (
+            <div className="bg-slate-800/50 rounded-xl p-6 flex justify-center items-center h-32">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : statistics ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Temperature Min Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-slate-400 text-sm font-medium">Temperatura Mínima</h3>
+                  <div className="px-2 py-1 rounded-full text-xs bg-[#0ea5e9]/20 text-[#0ea5e9]">
+                    Período
+                  </div>
+                </div>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.temperature_min.toFixed(1)}°<span className="text-lg">C</span>
+                </p>
+              </div>
+
+              {/* Temperature Max Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-slate-400 text-sm font-medium">Temperatura Máxima</h3>
+                  <div className="px-2 py-1 rounded-full text-xs bg-[#0ea5e9]/20 text-[#0ea5e9]">
+                    Período
+                  </div>
+                </div>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.temperature_max.toFixed(1)}°<span className="text-lg">C</span>
+                </p>
+              </div>
+
+              {/* Temperature Avg Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-slate-400 text-sm font-medium">Temperatura Média</h3>
+                  <div className="px-2 py-1 rounded-full text-xs bg-[#0ea5e9]/20 text-[#0ea5e9]">
+                    Período
+                  </div>
+                </div>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.temperature_avg.toFixed(1)}°<span className="text-lg">C</span>
+                </p>
+              </div>
+
+              {/* Humidity Avg Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-slate-400 text-sm font-medium">Umidade Média</h3>
+                  <div className="px-2 py-1 rounded-full text-xs bg-[#8b5cf6]/20 text-[#8b5cf6]">
+                    Período
+                  </div>
+                </div>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.humidity_avg.toFixed(1)}<span className="text-lg">%</span>
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </section>
+
         {/* Charts Section with time selector */}
         <section className="mb-8">
           <div className="flex justify-between items-center mb-4">
@@ -372,6 +508,108 @@ const HomePage = () => {
                 options={chartOptions}
                 className="h-[500px]"
               />
+            </div>
+          )}
+        </section>
+
+        {/* Anomaly Analysis Table */}
+        <section className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-[24px] font-semibold text-slate-300">Análise de Anomalias</h2>
+            <div className="text-sm text-slate-400">
+              {anomalyLoading ? (
+                <span>Carregando...</span>
+              ) : (
+                <span>{anomalyData.length} anomalias encontradas</span>
+              )}
+            </div>
+          </div>
+
+          {anomalyLoading ? (
+            <div className="bg-slate-800/50 rounded-xl p-6 flex justify-center items-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : anomalyData.length > 0 ? (
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-700">
+                  <thead className="bg-slate-800/50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                        Timestamp
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                        Temperatura
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                        Umidade
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                        Tipo de Anomalia
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-slate-800/20 divide-y divide-slate-700">
+                    {anomalyData.map((anomaly) => (
+                      <tr key={anomaly.id} className="hover:bg-slate-700/30 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                          {anomaly.timestamp.toLocaleString('pt-BR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                          <div className="flex items-center">
+                            <span>{anomaly.temperature.toFixed(1)}°C</span>
+                            {anomaly.diagnosis?.type.includes('temperature') && (
+                              <span className="ml-2 px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-400">
+                                {anomaly.diagnosis.type.includes('high') ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                          <div className="flex items-center">
+                            <span>{anomaly.humidity.toFixed(1)}%</span>
+                            {anomaly.diagnosis?.type.includes('humidity') && (
+                              <span className="ml-2 px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-400">
+                                {anomaly.diagnosis.type.includes('high') ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            anomaly.diagnosis?.type === 'high_temperature' 
+                              ? 'bg-red-500/20 text-red-400'
+                              : anomaly.diagnosis?.type === 'low_temperature'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : anomaly.diagnosis?.type === 'high_humidity'
+                              ? 'bg-yellow-500/20 text-yellow-400'
+                              : anomaly.diagnosis?.type === 'low_humidity'
+                              ? 'bg-purple-500/20 text-purple-400'
+                              : 'bg-orange-500/20 text-orange-400'
+                          }`}>
+                            {anomaly.diagnosis?.type === 'high_temperature' && 'Temperatura Alta'}
+                            {anomaly.diagnosis?.type === 'low_temperature' && 'Temperatura Baixa'}
+                            {anomaly.diagnosis?.type === 'high_humidity' && 'Umidade Alta'}
+                            {anomaly.diagnosis?.type === 'low_humidity' && 'Umidade Baixa'}
+                            {anomaly.diagnosis?.type === 'unusual_combination' && 'Combinação Incomum'}
+                            {anomaly.diagnosis?.type === 'unknown' && 'Desconhecido'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-8 border border-slate-700 shadow-lg text-center">
+              <div className="text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="text-lg font-medium text-slate-300 mb-2">Nenhuma anomalia encontrada</h3>
+                <p className="text-slate-500">Todos os dados do período selecionado estão dentro dos padrões normais.</p>
+              </div>
             </div>
           )}
         </section>
