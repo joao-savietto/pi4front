@@ -155,7 +155,8 @@ const HomePage = () => {
       const transformedAnomalyData = response.data.measurements.map((item: any) => ({
         ...item,
         timestamp: new Date(item.timestamp)
-      })).filter((item: MeasurementAnomaly) => item.is_anomalous); // Show only anomalous measurements
+      })).filter((item: MeasurementAnomaly) => item.is_anomalous) // Show only anomalous measurements
+      .sort((a: MeasurementAnomaly, b: MeasurementAnomaly) => b.timestamp.getTime() - a.timestamp.getTime()); // Sort by timestamp descending (most recent first)
 
       setAnomalyData(transformedAnomalyData);
     } catch (error) {
@@ -411,71 +412,6 @@ const HomePage = () => {
           ) : null}
         </section>
 
-        {/* Statistics Cards */}
-        <section className="mb-8">
-          <h2 className="text-[24px] font-semibold mb-4 text-slate-300">Estatísticas do Período</h2>
-          
-          {loading ? (
-            <div className="bg-slate-800/50 rounded-xl p-6 flex justify-center items-center h-32">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : statistics ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Temperature Min Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-slate-400 text-sm font-medium">Temperatura Mínima</h3>
-                  <div className="px-2 py-1 rounded-full text-xs bg-[#0ea5e9]/20 text-[#0ea5e9]">
-                    Período
-                  </div>
-                </div>
-                <p className="text-3xl font-bold mt-2">
-                  {statistics.temperature_min.toFixed(1)}°<span className="text-lg">C</span>
-                </p>
-              </div>
-
-              {/* Temperature Max Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-slate-400 text-sm font-medium">Temperatura Máxima</h3>
-                  <div className="px-2 py-1 rounded-full text-xs bg-[#0ea5e9]/20 text-[#0ea5e9]">
-                    Período
-                  </div>
-                </div>
-                <p className="text-3xl font-bold mt-2">
-                  {statistics.temperature_max.toFixed(1)}°<span className="text-lg">C</span>
-                </p>
-              </div>
-
-              {/* Temperature Avg Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-slate-400 text-sm font-medium">Temperatura Média</h3>
-                  <div className="px-2 py-1 rounded-full text-xs bg-[#0ea5e9]/20 text-[#0ea5e9]">
-                    Período
-                  </div>
-                </div>
-                <p className="text-3xl font-bold mt-2">
-                  {statistics.temperature_avg.toFixed(1)}°<span className="text-lg">C</span>
-                </p>
-              </div>
-
-              {/* Humidity Avg Card */}
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-slate-400 text-sm font-medium">Umidade Média</h3>
-                  <div className="px-2 py-1 rounded-full text-xs bg-[#8b5cf6]/20 text-[#8b5cf6]">
-                    Período
-                  </div>
-                </div>
-                <p className="text-3xl font-bold mt-2">
-                  {statistics.humidity_avg.toFixed(1)}<span className="text-lg">%</span>
-                </p>
-              </div>
-            </div>
-          ) : null}
-        </section>
-
         {/* Charts Section with time selector */}
         <section className="mb-8">
           <div className="flex justify-between items-center mb-4">
@@ -510,6 +446,51 @@ const HomePage = () => {
               />
             </div>
           )}
+        </section>
+
+        {/* Statistics Cards */}
+        <section className="mb-8">
+          <h2 className="text-[24px] font-semibold mb-4 text-slate-300">Estatísticas do Período</h2>
+          
+          {loading ? (
+            <div className="bg-slate-800/50 rounded-xl p-6 flex justify-center items-center h-32">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : statistics ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Temperature Min Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <h3 className="text-slate-400 text-sm font-medium mb-2">Temperatura Mínima</h3>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.temperature_min.toFixed(1)}°<span className="text-lg">C</span>
+                </p>
+              </div>
+
+              {/* Temperature Max Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <h3 className="text-slate-400 text-sm font-medium mb-2">Temperatura Máxima</h3>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.temperature_max.toFixed(1)}°<span className="text-lg">C</span>
+                </p>
+              </div>
+
+              {/* Temperature Avg Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <h3 className="text-slate-400 text-sm font-medium mb-2">Temperatura Média</h3>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.temperature_avg.toFixed(1)}°<span className="text-lg">C</span>
+                </p>
+              </div>
+
+              {/* Humidity Avg Card */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col justify-center h-full">
+                <h3 className="text-slate-400 text-sm font-medium mb-2">Umidade Média</h3>
+                <p className="text-3xl font-bold mt-2">
+                  {statistics.humidity_avg.toFixed(1)}<span className="text-lg">%</span>
+                </p>
+              </div>
+            </div>
+          ) : null}
         </section>
 
         {/* Anomaly Analysis Table */}
@@ -585,12 +566,24 @@ const HomePage = () => {
                               ? 'bg-yellow-500/20 text-yellow-400'
                               : anomaly.diagnosis?.type === 'low_humidity'
                               ? 'bg-purple-500/20 text-purple-400'
+                              : anomaly.diagnosis?.type === 'high_temperature_high_humidity'
+                              ? 'bg-red-500/30 text-red-300 border border-red-500/50'
+                              : anomaly.diagnosis?.type === 'high_temperature_low_humidity'
+                              ? 'bg-orange-500/30 text-orange-300 border border-orange-500/50'
+                              : anomaly.diagnosis?.type === 'low_temperature_high_humidity'
+                              ? 'bg-blue-500/30 text-blue-300 border border-blue-500/50'
+                              : anomaly.diagnosis?.type === 'low_temperature_low_humidity'
+                              ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/50'
                               : 'bg-orange-500/20 text-orange-400'
                           }`}>
                             {anomaly.diagnosis?.type === 'high_temperature' && 'Temperatura Alta'}
                             {anomaly.diagnosis?.type === 'low_temperature' && 'Temperatura Baixa'}
                             {anomaly.diagnosis?.type === 'high_humidity' && 'Umidade Alta'}
                             {anomaly.diagnosis?.type === 'low_humidity' && 'Umidade Baixa'}
+                            {anomaly.diagnosis?.type === 'high_temperature_high_humidity' && 'Temp ↑ + Umid ↑'}
+                            {anomaly.diagnosis?.type === 'high_temperature_low_humidity' && 'Temp ↑ + Umid ↓'}
+                            {anomaly.diagnosis?.type === 'low_temperature_high_humidity' && 'Temp ↓ + Umid ↑'}
+                            {anomaly.diagnosis?.type === 'low_temperature_low_humidity' && 'Temp ↓ + Umid ↓'}
                             {anomaly.diagnosis?.type === 'unusual_combination' && 'Combinação Incomum'}
                             {anomaly.diagnosis?.type === 'unknown' && 'Desconhecido'}
                           </span>
